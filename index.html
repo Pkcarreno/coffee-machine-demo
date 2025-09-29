@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Coffee simulator Web</title>
+        <!--importmap-->
+        <script type="importmap">
+            {
+                "imports": {
+                    "lit": "https://cdn.jsdelivr.net/npm/lit@3/+esm",
+                    "lit/directives/repeat": "https://cdn.jsdelivr.net/npm/lit@3/directives/repeat.js/+esm",
+                    "@coffee-machine/core": "https://cdn.jsdelivr.net/npm/@coffee-machine/core@1/+esm",
+                    "@coffee-machine/core/machines": "https://cdn.jsdelivr.net/npm/@coffee-machine/core@1/machines/+esm",
+                    "@twind/core": "https://cdn.jsdelivr.net/npm/@twind/core@1/+esm",
+                    "@twind/with-web-components": "https://cdn.jsdelivr.net/npm/@twind/with-web-components@1/+esm",
+                    "@twind/preset-tailwind": "https://cdn.jsdelivr.net/npm/@twind/preset-tailwind@1/+esm",
+                    "@twind/preset-tailwind-forms": "https://cdn.jsdelivr.net/npm/@twind/preset-tailwind-forms@1/+esm",
+                    "@twind/preset-autoprefix": "https://cdn.jsdelivr.net/npm/@twind/preset-autoprefix@1/+esm"
+                }
+            }
+        </script>
+        <script type="module">
+            import { applyTwind } from "./src/twind-setup.js";
+            applyTwind();
+        </script>
+        <!--web components-->
+        <script type="module" src="./src/components/coffee-form.js"></script>
+        <script
+            type="module"
+            src="./src/components/simulator-report.js"
+        ></script>
+        <!--internal logic-->
+        <script defer type="module">
+            import { HeatSource } from "@coffee-machine/core";
+
+            const onFormSubmit = async (data) => {
+                await customElements.whenDefined("simulator-report");
+                const simulatorReport = document.getElementById(
+                    "simulator-report-element",
+                );
+                await customElements.whenDefined("coffee-form");
+                const coffeeForm = document.getElementById(
+                    "coffee-form-element",
+                );
+
+                await simulatorReport.execute({
+                    // timeScale: Number(data["time-scale"]),
+                    timeScale: 1,
+                    coffeeType: data["coffee-type"],
+                    coffeeGrindSize: data["coffee-grind-size"],
+                    coffeeNominalWeightG: Number(data["coffee-weight"]),
+                    waterNominalVolumeMl: Number(data["water-volume"]),
+                    waterNominalTempC: Number(data["water-temp"]),
+                    heatSource: HeatSource.ELECTRIC,
+                    heatPowerW: Number(data["heat-power"]),
+                });
+            };
+
+            async function setBridge() {
+                await customElements.whenDefined("coffee-form");
+                const coffeeForm = document.getElementById(
+                    "coffee-form-element",
+                );
+
+                coffeeForm.setSubmitCallback(onFormSubmit);
+            }
+
+            setBridge();
+        </script>
+    </head>
+    <body class="min-h-screen p-6">
+        <div class="max-w-7xl flex flex-col mx-auto">
+            <div class="flex flex-col justify-center items-center mb-8">
+                <h1 class="text-3xl font-bold text-center">
+                    Demo @coffee-machine/core
+                </h1>
+                <a
+                    class="w-fit"
+                    href="https://github.com/Pkcarreno/coffee-machine-demo"
+                    >Source</a
+                >
+            </div>
+
+            <div class="flex-1 flex flex-col lg:flex-row gap-12">
+                <coffee-form
+                    id="coffee-form-element"
+                    class="flex flex-col justify-center"
+                ></coffee-form>
+                <simulator-report
+                    id="simulator-report-element"
+                    class="flex-1 flex flex-col justify-center"
+                ></simulator-report>
+            </div>
+        </div>
+    </body>
+</html>
